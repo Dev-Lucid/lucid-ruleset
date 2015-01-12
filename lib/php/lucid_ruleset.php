@@ -9,30 +9,35 @@ class lucid_ruleset
 
     function check_data($data)
     {
-        $msgs = [];
+        # a hash to store all of the error messages.
+        $errors = [];
         foreach($this->rules as $rule)
         {
+            # if the rule fails...
             if(!$this->check_rule($rule,$data))
             {
-                if(!isset($msgs[$rule[0]]) or !is_array($msgs[$rule[0]]))
+                # make sure the hash index is an array
+                if(!isset($errors[$rule['field']]) or !is_array($errors[$rule['field']]))
                 {
-                    $msgs[$rule[0]] = [];
+                    $errors[$rule['error']] = [];
                 }
-                $msgs[$rule[0]][] = array_pop($rule);
+
+                # push the error message onto the list of errors
+                $errors[$rule['field']][] = $rule['error'];
             }
         }
-        return (count($msgs) > 0)?$msgs:true;
+        return (count($errors) > 0)?$errors:true;
     }
 
     function check_rule($rule,$data)
     {
-        switch($rule[1])
+        switch($rule['type'])
         {
             case 'length':
-                $field = $rule[0];
+                $field = $rule['field'];
                 $value = (isset($data[$field]))?$data[$field]:'';
-                $min   = $rule[2];
-                $max   = $rule[3];
+                $min   = (isset($rule['min']))?$rule['min']:0;
+                $max   = (isset($rule['max']))?$rule['max']:9999999;
                 return (strlen($value) >= $min and strlen($value) <= $max);
                 break;
             case 'valid_email':
@@ -42,6 +47,12 @@ class lucid_ruleset
                 break;
         }
         return true;
+    }
+
+    function render_js($form_name)
+    {
+        $js = 'lucid.rulesets[\''.$form_name.'\'] = new lucid.ruleset('.json_encode($this->rules).');';
+        lucid::javascript($js);
     }
 }
 
