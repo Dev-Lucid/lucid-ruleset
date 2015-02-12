@@ -19,7 +19,7 @@ class lucid_ruleset
                 # make sure the hash index is an array
                 if(!isset($errors[$rule['field']]) or !is_array($errors[$rule['field']]))
                 {
-                    $errors[$rule['error']] = [];
+                    $errors[$rule['field']] = [];
                 }
 
                 # push the error message onto the list of errors
@@ -52,6 +52,13 @@ class lucid_ruleset
     function render_js($form_name)
     {
         $js = 'lucid.rulesets[\''.$form_name.'\'] = new lucid.ruleset('.json_encode($this->rules).');';
+        lucid::javascript($js);
+    }
+
+    public static function form_show_errors($form_name,$results)
+    {
+        $js = 'lucid.handlers.showFormErrors(document.getElementById(\''.$form_name.'\'),'.json_encode($results).')';
+        lucid::log($js);
         lucid::javascript($js);
     }
 }
